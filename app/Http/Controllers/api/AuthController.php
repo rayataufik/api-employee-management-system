@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -39,11 +40,25 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
+            if (!$request->user()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not logged in',
+                ], 401);
+            }
 
-        return response([
-            'status' => 'success',
-            'message' => 'Logout successful'
-        ]);
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Logout successful',
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to logout',
+            ], 500);
+        }
     }
 }
